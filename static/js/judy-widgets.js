@@ -6,9 +6,9 @@
 
   var style = document.createElement('style');
   style.textContent = [
-    '#judy-follower{position:fixed;left:0;top:0;width:88px;height:88px;pointer-events:none;user-select:none;z-index:9999;transform:translate3d(-200px,-200px,0);transform-origin:50% 80%;will-change:transform;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25));display:block}',
+    '#judy-follower{position:fixed;left:0;top:0;width:33px;height:33px;pointer-events:none;user-select:none;z-index:9999;transform:translate3d(-200px,-200px,0);transform-origin:50% 80%;will-change:transform;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25));display:block}',
     '#judy-follower img{width:100%;height:100%;object-fit:contain;display:none}',
-    '#judy-follower-ph{width:100%;height:100%;display:grid;place-items:center;font-size:56px}'
+    '#judy-follower-ph{width:100%;height:100%;display:grid;place-items:center;font-size:3px}'
   ].join('\n');
   document.head.appendChild(style);
 
