@@ -1,0 +1,34 @@
+{{- $source := .source -}}
+{{- $temp := .temp -}}
+{{- $target := .target -}}
+{{- $permalinkOnly := .permalinkOnly | default false -}}
+{{- $absolute := .absolute | default false -}}
+{{- $ctx := .ctx -}}
+{{- $async := .async | default false -}}
+{{- $scss := resources.Get $source -}}
+{{- $scss = $scss | resources.ExecuteAsTemplate $temp $ctx -}}
+{{- $css := $scss | toCSS (dict "targetPath" $target "outputStyle" "expanded") -}}
+{{- if hugo.IsProduction -}}
+  {{- $css = $css | minify | fingerprint -}}
+{{- end -}}
+{{- if $permalinkOnly -}}
+  {{- if $absolute -}}
+    {{- $css.RelPermalink | absURL -}}
+  {{- else -}}
+    {{- $css.RelPermalink -}}
+  {{- end -}}
+{{- else -}}
+  {{- if $async -}}
+    {{- if $absolute -}}
+      <link rel="preload" as="style" href="{{ $css.RelPermalink | absURL }}" onload="this.onload=null;this.rel='stylesheet'" />
+    {{- else -}}
+      <link rel="preload" as="style" href="{{ $css.RelPermalink }}" onload="this.onload=null;this.rel='stylesheet'" />
+    {{- end -}}
+  {{- else -}}
+    {{- if $absolute -}}
+      <link rel="stylesheet" href="{{ $css.RelPermalink | absURL }}" />
+    {{- else -}}
+      <link rel="stylesheet" href="{{ $css.RelPermalink }}" />
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

@@ -1,0 +1,481 @@
+{{- $site := .Site -}}
+{{- $params := .Site.Params -}}
+{{- $js := hugo.Data.vendor.js -}}
+{{- $css := hugo.Data.vendor.css -}}
+
+{{- partial "helpers/cdnJs.html" (dict "name" "lazysizes" "ctx" .) }}
+{{- partial "helpers/cdnJs.html" (dict "name" "clipboard" "ctx" .) }}
+
+{{- if $params.material_theme.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "material_theme" "ctx" .) -}}
+{{- end -}}
+
+{{- partial "helpers/ts.html" (dict "source" "js/main.ts" "ctx" .) -}}
+
+{{- if $params.animation.enable -}}
+  {{- partial "helpers/ts.html" (dict "source" "js/aos.ts" "ctx" .) -}}
+  <script>
+    var aosInit = () => {
+      AOS.init({
+        duration: 1000,
+        easing: "ease",
+        once: true,
+        offset: 50,
+      });
+    };
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", aosInit);
+    } else {
+      aosInit();
+    }
+  </script>
+{{- end -}}
+
+{{- partial "helpers/ts.html" (dict "source" "js/pjax_main.ts" "pjax" true "ctx" .) -}}
+
+{{- if $params.algolia_search.enable -}}
+  <script>
+    var ALGOLIA_CONFIG = {
+      logo: '{{ "images/algolia_logo.svg" | relURL }}',
+      algolia: {
+        applicationID: "{{ $params.algolia_search.appID }}",
+        apiKey: "{{ $params.algolia_search.apiKey }}",
+        indexName: "{{ $params.algolia_search.indexName }}",
+        hits: {
+          "per_page": parseInt("{{ $params.algolia_search.hits.per_page }}")
+        },
+        labels: {
+          "input_placeholder": '{{ i18n "algolia.input_placeholder" }}',
+          "hits_empty": '{{ i18n "algolia.hits_empty" }}',
+          "hits_stats": '{{ i18n "algolia.hits_stats" }}'
+        }
+      }
+    };
+  </script>
+  {{- partial "helpers/cdnJs.html" (dict "name" "algolia" "ctx" . "defer" true) -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "instantsearch" "ctx" . "defer" true) -}}
+  {{- partial "helpers/ts.html" (dict "source" "js/algolia_search.ts" "ctx" .) -}}
+{{- end -}}
+
+{{- if $params.firework.enable -}}
+<script>
+  var setupFirework = () => {
+    if (!{{ $params.firework.disable_on_mobile | default false }} || !window.matchMedia('(max-width: 768px)').matches) {
+      if (window.firework) {
+        const options = JSON.parse({{ $params.firework.options | jsonify }});
+        options.excludeElements = options.excludeelements;
+        delete options.excludeelements;
+        window.firework(options);
+      }
+    }
+  }
+</script>
+  {{- partial "helpers/cdnJs.html" (dict "name" "firework" "ctx" . "defer" true "onload" "setupFirework()") -}}
+{{- end -}}
+
+{{- if $params.pjax.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "pjax" "ctx" .) -}}
+  {{- partial "helpers/ts.html" (dict "source" "js/pjax.ts" "ctx" .) -}}
+{{- end -}}
+
+{{- if $params.live2d.enable -}}
+<script>
+  var setupLive2d = () => {
+    live2d.init('{{ index (partial "helpers/vendorCdn.html" (dict "item" $js.live2d.base "ctx" $site)) 0 }}', {themeTipsPath: ""});
+  }
+</script> {{- partial "helpers/cdnJs.html" (dict "name" "live2d" "item" $js.live2d.js "ctx" . "async" true "onload" "setupLive2d()") -}}
+{{- else if $params.live2d_widgets.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "live2d_widgets" "ctx" . "defer" true) -}}
+{{- end -}}
+
+{{- if $params.quicklink.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "quicklink" "ctx" .) -}}
+  <script data-pjax>
+    window.quicklink?.listen({
+      timeout: {{ $params.quicklink.timeout }},
+      priority: {{ $params.quicklink.priority }},
+      ignores: JSON.parse({{ $params.quicklink.ignores | jsonify }})
+    });
+  </script>
+{{ end }}
+
+<div id="lazy-script">
+  <div>
+    {{- if .Permalink -}}
+      {{- $desc := "" -}}
+      {{- if .Params.description -}}
+        {{- $desc = .Params.description | plainify | truncate 300 -}}
+      {{- else if .Summary -}}
+        {{- $desc = .Summary  | plainify | truncate 300 -}}
+      {{- else -}}
+        {{- $desc = .RawContent | truncate 300 -}}
+      {{- end -}}
+      <script data-pjax>
+        window.REIMU_POST = {
+          author: "{{ .Params.author | default $params.author }}",
+          title: "{{ .Title }}",
+          url: "{{ .Permalink }}",
+          description: "{{ $desc }}",
+          cover: {{ if and .Params.cover (not (strings.HasPrefix .Params.cover "rgb")) }}"{{ .Params.cover | absURL }}"{{ else }}"{{ .Site.Params.banner | absURL }}"{{ end }},
+        };
+      </script>
+    {{- end -}}
+    {{- if and (.Store.Get "hasMermaid") .Params.mermaid -}}
+      {{- partial "helpers/cdnJs.html" (dict "name" "mermaid" "ctx" . "pjax" true) -}}
+      {{- partial "helpers/cdnJs.html" (dict "name" "dompurify" "ctx" . "pjax" true) -}}
+      {{- if $params.mermaid.zoom -}}
+        {{- partial "helpers/cdnJs.html" (dict "name" "svg_pan_zoom" "ctx" . "pjax" true) -}}
+      {{- end -}}
+      <script data-pjax>
+        if (window.mermaid) {
+          // https://github.com/mermaid-js/mermaid/issues/1945
+          const elementCode = '.mermaid'
+          const processElements = (callback) => {
+            const els = _$$(elementCode);
+            if (!els.length) return Promise.resolve();
+            
+            return new Promise((resolve, reject) => {
+              try {
+                els.forEach(callback);
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            });
+          };
+          const saveOriginalData = () => processElements(el => {
+            if (!el.getAttribute('data-original-code')) {
+              el.setAttribute('data-original-code', el.innerHTML);
+            }
+          });
+
+          const resetProcessed = () => processElements(el => {
+            const originalCode = el.getAttribute('data-original-code');
+            if (originalCode) {
+              el.removeAttribute('data-processed');
+              el.innerHTML = DOMPurify.sanitize(originalCode);
+            }
+          });
+          const loadMermaid = async (theme) => {
+            window.mermaid.initialize({theme, startOnLoad: false})
+            await window.mermaid.run({querySelector: elementCode, suppressErrors: true})
+            if (window.svgPanZoom) {
+              window.__panZoomList?.forEach(panZoom => {try {panZoom.destroy()} catch {}});
+              window.__panZoomList = [];
+              _$$('.mermaid > svg').forEach(el => {
+                const bbox = el.getBBox();
+                el.setAttribute('height', Math.max(bbox.height, 80));
+                window.__panZoomList.push(window.svgPanZoom(el, {
+                  zoomEnabled: true,
+                  controlIconsEnabled: true,
+                  fit: true,
+                  center: true
+                }));
+              });
+              if (window.__resizeMermaidSvg) {
+                window.removeEventListener('resize', window.__resizeMermaidSvg);
+              }
+              window.__resizeMermaidSvg = () => {
+                try {
+                  window.__panZoomList.forEach(panZoom => {
+                    panZoom.resize();
+                    panZoom.fit();
+                    panZoom.center();
+                  });
+                } catch {
+                  window.removeEventListener('resize', window.__resizeMermaidSvg);
+                  window.__panZoomList = [];
+                }
+              }
+              window.addEventListener('resize', window.__resizeMermaidSvg);
+            }
+          }
+          const initMermaid = async (theme) => {
+            try {
+              await saveOriginalData();
+              await resetProcessed();
+              await loadMermaid(theme);
+            } catch (error) {
+              console.error(error);
+            }
+          };
+          
+          document.body.addEventListener('reimu:theme-set', (e) => {
+            const isDark = e.detail.isDark;
+            initMermaid(isDark ? 'dark' : 'default');
+          });
+
+          const mode = localStorage.getItem('dark_mode');
+          if (mode === 'auto') {
+            const osMode = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            initMermaid(osMode ? 'dark' : 'default');
+          } else {
+            initMermaid(mode === 'true' ? 'dark' : 'default');
+          }
+        }
+      </script>
+    {{- end -}}
+    {{- if not .IsHome -}}
+      {{- partial "helpers/ts.html" (dict "source" "js/insert_highlight.ts" "pjax" true "ctx" .) -}}
+      {{- if or $params.anchor.explicit.enable $params.anchor.auto.enable -}}
+        {{- partial "helpers/ts.html" (dict "source" "js/anchor.ts" "pjax" true "ctx" .) -}}
+      {{- end -}}
+      {{- partial "helpers/ts.html" (dict "source" "js/tabs.ts" "pjax" true "ctx" . "defer" true) -}}
+      {{- $photoswipe_lightbox := index (partial "helpers/vendorCdn.html" (dict "item" $js.photoswipe_lightbox "ctx" $site)) 0 -}}
+      {{- $photoswipe_lightbox_integrity := index (partial "helpers/vendorCdnIntegrity.html" (dict "item" $js.photoswipe_lightbox)) 0 -}}
+      {{- $photoswipe := index (partial "helpers/vendorCdn.html" (dict "item" $js.photoswipe "ctx" $site)) 0 -}}
+      {{- $photoswipe_integrity := index (partial "helpers/vendorCdnIntegrity.html" (dict "item" $js.photoswipe)) 0 -}}
+      <script type="module" data-pjax>
+        {{- if (partial "helpers/vendorLocalCheck.html" $js.photoswipe_lightbox) -}}
+        import PhotoSwipeLightbox from '{{ $photoswipe_lightbox }}';
+        {{- else -}}
+        const PhotoSwipeLightbox = (await safeImport("{{ $photoswipe_lightbox }}", "{{ $photoswipe_lightbox_integrity }}")).default;
+        {{- end -}}
+        const initPswp = (gallery, children) => {
+          if (_$$(`${gallery} ${children}`).length > 0) {
+            new PhotoSwipeLightbox({
+              gallery,
+              children,
+              {{- if (partial "helpers/vendorLocalCheck.html" $js.photoswipe) -}}
+              pswpModule: () => import('{{ $photoswipe }}'),
+              {{- else -}}
+              pswpModule: () => safeImport("{{ $photoswipe }}", "{{ $photoswipe_integrity }}")
+              {{- end -}}
+            }).init();
+          }
+        }
+        const pswp = () => {
+          initPswp('.article-entry', 'a.article-gallery-item');
+          initPswp('.article-gallery', 'a.article-gallery-item');
+        }
+        pswp()
+      </script>
+      {{- partial "post/comment.html" . -}}
+      {{- if and (reflect.IsSlice .Site.Params.share) (in .Site.Params.share "weixin") -}}
+        {{- partial "helpers/cdnJs.html" (dict "name" "qrcode" "ctx" . "pjax" true "defer" true) -}}
+        {{- partial "helpers/cdnJs.html" (dict "name" "snapdom" "ctx" . "pjax" true "defer" true) -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if .Params.math -}}
+      {{- if .Site.Params.math.katex.enable -}}
+        {{- partial "helpers/cdnJs.html" (dict "name" "katex" "ctx" . "pjax" true) -}}
+        {{- partial "helpers/cdnJs.html" (dict "name" "katex_auto_render" "ctx" . "pjax" true) -}}
+        <script data-pjax>
+          var renderMath = () => {
+            if (!window.renderMathInElement) return;
+            window.renderMathInElement(_$("article"), {
+              delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "\\[", right: "\\]", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+              ],
+            });
+            window.katexTagOverflowHandler?.();
+          };
+          if (document.readyState === "loading") {
+            document.addEventListener("DOMContentLoaded", renderMath, { once: true });
+          } else {
+            renderMath();
+          }
+        </script>
+      {{- end -}}
+      {{- if .Site.Params.math.mathjax.enable -}}
+        <script data-pjax>
+          window.MathJax = JSON.parse({{ .Site.Params.math.mathjax.options | jsonify }})[0];
+        </script>
+        {{- partial "helpers/cdnJs.html" (dict "name" "mathjax" "ctx" . "defer" true "pjax" true) -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if and .IsHome (reflect.IsMap .Site.Params.subtitle) .Site.Params.subtitle.typing.enable -}}
+      {{- partial "helpers/cdnJs.html" (dict "name" "typed" "ctx" . "defer" true "onload" "initSubtitleTyping") -}}
+      <script data-pjax>
+        window.subtitleTypingConfig = {
+          strings: [
+            {{- range $index, $string := .Site.Params.subtitle.typing.strings -}}
+              {{- if $index -}},{{- end -}}
+              "{{ $string }}"
+            {{- end -}}
+          ],
+          typeSpeed: {{ .Site.Params.subtitle.typing.typeSpeed | default 100 }},
+          backSpeed: {{ .Site.Params.subtitle.typing.backSpeed | default 50 }},
+          backDelay: {{ .Site.Params.subtitle.typing.backDelay | default 2000 }},
+          startDelay: {{ .Site.Params.subtitle.typing.startDelay | default 300 }},
+          loop: {{ .Site.Params.subtitle.typing.loop | default true }},
+          shuffle: {{ .Site.Params.subtitle.typing.shuffle | default true }},
+          showCursor: {{ .Site.Params.subtitle.typing.showCursor | default true }},
+          {{- if .Site.Params.subtitle.typing.cursorChar -}}
+          cursorChar: "{{ .Site.Params.subtitle.typing.cursorChar }}",
+          {{- end -}}
+          smartBackspace: {{ .Site.Params.subtitle.typing.smartBackspace | default false }}
+        };
+        function initSubtitleTyping() {
+          const subtitleElement = document.querySelector('#subtitle span');
+          if (!subtitleElement || !window.Typed || !window.subtitleTypingConfig) {
+            return;
+          }
+
+          if (window.__typedInstance) {
+            window.__typedInstance.destroy();
+          }
+
+          window.__typedInstance = new Typed('#subtitle span', window.subtitleTypingConfig);
+        }
+        
+        if (!window.__typedInitialized) {
+          window.__typedInitialized = true;
+          
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initSubtitleTyping);
+          } else {
+            initSubtitleTyping();
+          }
+        } else {
+          initSubtitleTyping();
+        }
+      </script>
+    {{- end -}}
+  </div>
+</div>
+
+{{- if $params.outdate.enable -}}
+  <script data-pjax>
+    var updateTime = _$('#post-update-time')?.innerHTML;
+
+    if (updateTime) {
+      const update = new Date(updateTime);
+      const now = new Date();
+      const diff = now - update;
+      const days = diff / 86400000;
+      const { daysago: daysAgo, message: template } = window.siteConfig.outdate;
+      if (days >= daysAgo) {
+        let message = `This article was last updated on ${updateTime}. Please note that the content may no longer be applicable.`;
+        if (typeof template === 'string') {
+          message = template.replace(/{time}/, updateTime);
+        } else if (typeof template === 'object') {
+          const lang = document.documentElement.lang;
+          const messageKey = Object.keys(template).find(key => key.toLowerCase() === lang.toLowerCase());
+          if (messageKey && template[messageKey]) {
+            message = template[messageKey].replace(/{time}/, updateTime);
+          }
+        }
+        const blockquote = _$('#outdate-blockquote');
+        if (blockquote) {
+          blockquote.querySelectorAll('p')[1].innerText = message;
+          blockquote.style.display = 'flow-root';
+        }
+      }
+    }
+  </script>
+{{- end -}}
+
+{{- if $params.footer.busuanzi -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "busuanzi" "ctx" . "async" true) -}}
+{{- end -}}
+
+{{- if $params.service_worker.enable -}}
+  {{- partial "helpers/ts.html" (dict "source" "js/sw.ts" "ctx" . "inline" false "target" "sw.js") -}}
+  {{- partial "helpers/ts.html" (dict "source" "js/service_worker.ts" "ctx" .) -}}
+{{- else -}}
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (let registration of registrations) {
+          registration.unregister();
+        }
+      });
+    }
+  </script>
+{{- end -}}
+
+<script>
+  const reimuCopyright = String.raw`
+   ______     ______     __     __    __     __  __    
+  /\  == \   /\  ___\   /\ \   /\ "-./  \   /\ \/\ \   
+  \ \  __<   \ \  __\   \ \ \  \ \ \-./\ \  \ \ \_\ \  
+   \ \_\ \_\  \ \_____\  \ \_\  \ \_\ \ \_\  \ \_____\ 
+    \/_/ /_/   \/_____/   \/_/   \/_/  \/_/   \/_____/ 
+                                                    
+  `;
+  console.log(String.raw`%c ${reimuCopyright}`, "color: #ff5252;");
+  console.log(
+    "%c Theme.Reimu" + " %c https://github.com/D-Sketon/hugo-theme-reimu ",
+    "color: white; background: #ff5252; padding:5px 0;",
+    "padding:4px;border:1px solid #ff5252;",
+  );
+</script>
+
+{{- if $params.player.aplayer.enable -}}
+  {{- if not $params.player.meting.enable -}}
+    <script>
+    var setupAPlayer = () => {
+      if (!{{ $params.player.disable_on_mobile | default false }} || !window.matchMedia('(max-width: 768px)').matches) {
+        const isMobile = window.matchMedia('(max-width: 959px)').matches;
+        if (isMobile) {
+        const aplayer = _$('#aplayer');
+          if (aplayer) {
+            const aside = aplayer.parentNode?.parentNode;
+            if (aside?.tagName === 'ASIDE') {
+              aplayer.removeAttribute('data-aos');
+              aside.parentNode.removeChild(aplayer);
+              document.body.appendChild(aplayer);
+            }
+          }
+        }
+        new APlayer({
+            theme: "var(--color-link)",
+            container: document.getElementById('aplayer'),
+            audio: JSON.parse({{ $params.player.aplayer.options.audio | jsonify }}) || [],
+            fixed: isMobile ? true : ({{ $params.player.aplayer.options.fixed }} || false),
+            autoplay: {{ $params.player.aplayer.options.autoplay }} || false,
+            loop: '{{ $params.player.aplayer.options.loop }}' || 'all',
+            order: '{{ $params.player.aplayer.options.order }}' || 'list',
+            preload: '{{ $params.player.aplayer.options.preload }}' || 'auto',
+            volume: {{ $params.player.aplayer.options.volume }} || 0.7,
+            mutex: {{ $params.player.aplayer.options.mutex }} || true,
+            listFolded: {{ $params.player.aplayer.options.listFolded }} || false,
+            lrcType: {{ $params.player.aplayer.options.lrcType }} || 0,
+        });
+      }
+    }
+    </script>
+  {{- else -}}
+    <script>
+    var setupAPlayer = () => {
+      if (!{{ $params.player.disable_on_mobile | default false }} || !window.matchMedia('(max-width: 768px)').matches) {
+        if (window.matchMedia('(max-width: 959px)').matches) {
+          const meting = _$('meting-js');
+          if (meting) {
+            meting.setAttribute('fixed', 'true');
+            const aside = meting.parentNode?.parentNode;
+            if (aside?.tagName === 'ASIDE') {
+              meting.parentNode.removeChild(meting);
+              document.body.appendChild(meting);
+            }
+          }
+        }
+      }
+    };
+    {{- if $params.player.meting.meting_api -}}
+      var meting_api = '{{ $params.player.meting.meting_api }}';
+    {{- end -}}
+    </script>
+  {{- end -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "aplayer" "ctx" . "defer" true "onload" "setupAPlayer()") -}}
+    {{- if $params.player.meting.enable -}}
+    {{- partial "helpers/cdnJs.html" (dict "name" "meting" "ctx" . "defer" true) -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if .Site.Params.pangu.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "pangu" "ctx" .) -}}
+  <script data-pjax>
+    if (document.readyState === "loading") {
+      document.addEventListener('DOMContentLoaded', () => {
+        pangu?.spacingPage();
+      });
+    } else {
+      pangu?.spacingPage();
+    }
+  </script>
+{{- end -}}

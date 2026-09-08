@@ -1,0 +1,157 @@
+<meta charset="utf-8" />
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, shrink-to-fit=no"
+/>
+{{- partial "head/init.html" . -}}
+{{- $title := .Title -}}
+{{- if .IsHome -}}
+  {{- $title = site.Title -}}
+{{- else if eq .Type "archives" -}}
+  {{- $title = printf "%s | %s" (i18n "archive_a") .Site.Params.author -}}
+{{- else if eq .Type "tags" -}}
+  {{- if eq .Title "Tags" -}}
+    {{- $title = printf "%s | %s" (i18n "tag") .Site.Params.author -}}
+  {{- else -}}
+    {{- $title = printf "%s | %s" .Title .Site.Params.author -}}
+  {{- end -}}
+{{- else if eq .Type "categories" -}}
+  {{- if eq .Title "Categories" -}}
+    {{- $title = printf "%s | %s" (i18n "category") .Site.Params.author -}}
+  {{- else -}}
+    {{- $title = printf "%s | %s" .Title .Site.Params.author -}}
+  {{- end -}}
+{{- else if .Title -}}
+  {{- $title = printf "%s | %s" .Title .Site.Params.author -}}
+{{- else -}}
+  {{- $title = printf "%s | %s" .Title .Site.Params.author -}}
+{{- end -}}
+<title>
+  {{ $title | safeHTML }}
+</title>
+<meta name="description" content="{{ .Params.description | default .Site.Params.description | safeHTML }}"/>
+{{- $keywords := default .Site.Params.keywords .Params.keywords -}}
+{{- with $keywords }}
+  {{- if reflect.IsSlice . }}
+    <meta name="keywords" content="{{ delimit . ", " }}" />
+  {{- else }}
+    <meta name="keywords" content="{{ . }}" />
+  {{- end }}
+{{- end }}
+{{- $site := .Site -}}
+{{- partialCached "head/analytics.html" . -}}
+{{- partialCached "head/config.html" . -}}
+
+{{- if .Site.Params.custom_font.enable -}}
+  {{- partialCached "helpers/vendorFont.html" . -}}
+{{- end -}}
+
+{{- if .Site.Params.font.enable -}}
+  {{- partialCached "helpers/vendorGoogleFont.html" . -}}
+{{- end -}}
+
+{{- $js := hugo.Data.vendor.js -}}
+{{- $css := hugo.Data.vendor.css -}}
+<!-- icon -->
+{{- if .Site.Params.icon_font -}}
+  <link
+    rel="preload"
+    href="//at.alicdn.com/t/c/font_{{ .Site.Params.icon_font }}.woff2"
+    as="font"
+    type="font/woff2"
+    crossorigin="anonymous"
+  />
+{{- else -}}
+  {{- range $css.fontawesome.high_priority -}}
+    {{- partial "helpers/cdnCss.html" (dict "item" . "ctx" $) -}}
+  {{- end -}}
+  {{- range $css.fontawesome.low_priority -}}
+    {{- partial "helpers/cdnCss.html" (dict "item" . "ctx" $ "async" true) -}}
+  {{- end -}}
+{{- end -}}
+<!-- loader -->
+{{- if .Site.Params.preloader.enable -}}
+  {{- partial "helpers/scss.html" (dict "source" "css/loader.scss" "temp" "loader.scss" "target" "css/loader.css" "ctx" .) -}}
+{{- end -}}
+<!-- open-graph -->
+{{- if .Site.Params.open_graph.enable -}}
+  {{- $openGraphOptions := .Site.Params.open_graph.options -}}
+  {{- $ogImage := "" -}}
+  {{- if and .Params.cover (not (strings.HasPrefix .Params.cover "rgb")) -}}
+    {{- $ogImage = .Params.cover | absURL -}}
+  {{- else if and .Params.banner (not (strings.HasPrefix .Params.banner "rgb")) -}}
+    {{- $ogImage = .Params.banner | absURL -}}
+  {{- else -}}
+    {{- $ogImage = .Site.Params.banner | absURL -}}
+  {{- end -}}
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="{{ $title | safeHTML }}" />
+  <meta
+    property="og:description"
+    content="{{ .Params.description | default .Site.Params.description | safeHTML }}"
+  />
+  <meta property="og:url" content="{{ .Permalink }}" />
+  <meta
+    property="og:site_name"
+    content="{{ .Site.Params.title | default .Site.Title | safeHTML }}"
+  />
+  <meta property="og:image" content="{{ $ogImage }}" />
+  <meta property="article:author" content="{{ .Site.Params.author | safeHTML }}" />
+  <meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05-07:00" }}" />
+  <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05-07:00" }}" />
+  {{- if .Params.tags -}}
+    <meta property="article:tag" content="{{ delimit .Params.tags ", " }}" />
+  {{- end -}}
+  <meta name="twitter:card" content="{{ $openGraphOptions.twitter_card | default "summary" }}" />
+  {{- if $openGraphOptions.twitter_image -}}
+    <meta name="twitter:image" content="{{ $openGraphOptions.twitter_image | absURL }}" />
+  {{- else -}}
+    <meta name="twitter:image" content="{{ $ogImage }}" />
+  {{- end -}}
+  {{- if $openGraphOptions.twitter_site -}}
+    <meta name="twitter:site" content="{{ $openGraphOptions.twitter_site }}" />
+  {{- end -}}
+  {{- if $openGraphOptions.twitter_id -}}
+    <meta name="twitter:creator" content="{{ $openGraphOptions.twitter_id }}" />
+  {{- end -}}
+  {{- if $openGraphOptions.fb_app_id -}}
+    <meta property="fb:app_id" content="{{ $openGraphOptions.fb_app_id }}" />
+  {{- end -}}
+  {{- if $openGraphOptions.fb_admins -}}
+    <meta property="fb:admin_id" content="{{ $openGraphOptions.fb_admins }}" />
+  {{- end -}}
+  {{- if $openGraphOptions.google_plus -}}
+    <meta property="g+:profile_link" content="{{ $openGraphOptions.google_plus }}" />
+  {{- end -}}
+{{- end -}}
+<!-- rss -->
+{{- with .OutputFormats.Get "rss" -}}
+  {{- printf `<link rel=%q type=%q href=%q title=%q>` .Rel .MediaType.Type .Permalink site.Title | safeHTML -}}
+{{- end -}}
+<!-- favicon use default -->
+<link rel="shortcut icon" href="{{ "favicon.ico" | relURL }}">
+{{- partial "helpers/scss.html" (dict "source" "css/main.scss" "temp" "main.scss" "target" "css/main.css" "ctx" .) -}}
+<!-- photo-swipe -->
+{{- partial "helpers/cdnCss.html" (dict "name" "photoswipe" "ctx" . "async" true) -}}
+<!-- katex -->
+{{- partial "helpers/cdnCss.html" (dict "name" "katex" "ctx" . "async" true) -}}
+<!-- waline -->
+{{- if and .Site.Params.waline.enable .Site.Params.waline.serverURL -}}
+  {{- partial "helpers/cdnCss.html" (dict "name" "waline" "ctx" .) -}}
+{{- end -}}
+<!-- gitalk -->
+{{- if and .Site.Params.gitalk.enable .Site.Params.gitalk.clientID .Site.Params.gitalk.clientSecret -}}
+  {{- partial "helpers/cdnCss.html" (dict "name" "gitalk" "ctx" .) -}}
+{{- end -}}
+<!-- pace -->
+{{- if .Site.Params.pace.enable -}}
+  {{- partial "helpers/cdnJs.html" (dict "name" "pace" "ctx" .) -}}
+{{- end -}}
+<!-- aos -->
+{{- if .Site.Params.animation.enable -}}
+  {{- partial "helpers/cdnCss.html" (dict "name" "aos" "ctx" .) -}}
+{{- end -}}
+
+{{- if .Site.Params.player.aplayer.enable -}}
+  {{- partial "helpers/cdnCss.html" (dict "name" "aplayer" "ctx" .) -}}
+{{- end -}}

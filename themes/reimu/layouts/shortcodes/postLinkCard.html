@@ -1,0 +1,54 @@
+{{- $path := .Get "path" -}}
+{{- $cover := .Get "cover" -}}
+{{- $escape := .Get "escape" | default true -}}
+
+{{- $page := .Site.GetPage $path -}}
+
+{{- if not $page -}}
+  {{- errorf "postLinkCard shortcode: page not found: %s" $path -}}
+{{- end -}}
+
+{{- $title := $page.Title -}}
+{{- $displayTitle := $title -}}
+{{- if not $escape -}}
+	{{- $displayTitle = $title | safeHTML -}}
+{{- end -}}
+
+<div class="post-link-card-wrap">
+  <div class="post-link-card">
+    <a href="{{ $page.Permalink | relURL }}" title="{{ $title }}"></a>
+    {{- if eq $cover "auto" -}}
+      <div class="post-link-card-cover-wrap">
+        <img
+          src="{{ .Site.Params.banner | relURL }}"
+          class="no-lightbox"
+          title="{{ $title }}"
+          alt="{{ $title }}"
+        />
+      </div>
+    {{- else if $cover -}}
+      <div class="post-link-card-cover-wrap">
+        <img
+          src="{{ $cover | relURL }}"
+          class="no-lightbox"
+          title="{{ $title }}"
+          alt="{{ $title }}"
+        />
+      </div>
+    {{- end -}}
+    <div class="post-link-card-item-wrap">
+      <div class="post-link-card-title">
+        {{ $displayTitle }}
+      </div>
+      <div class="post-link-card-excerpt">
+        {{- if $page.Params.description -}}
+          {{- $page.Params.description | plainify | truncate 100 -}}
+        {{- else if $page.Summary -}}
+          {{- $page.Summary | plainify | truncate 100 -}}
+        {{- else -}}
+          {{- $page.RawContent | truncate 100 -}}
+        {{- end -}}
+      </div>
+    </div>
+  </div>
+</div>
