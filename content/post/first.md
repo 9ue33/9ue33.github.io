@@ -1,8 +1,8 @@
 ---
 title: "欢迎来到我的动物城小窝"
-date: 2026-09-05
+date: 2026-09-01
 categories: ["喜欢"]
-tags: ["朱迪", "尼克"]
+tags: ["开始"]
 description: "第一篇示例文章，欢迎来到我的动物城小窝！"
 draft: false
 ---
