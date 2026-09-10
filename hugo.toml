@@ -4,6 +4,10 @@ theme = 'reimu'
 defaultContentLanguage = 'zh-CN'
 hasCJKLanguage = true
 
+[markup.highlight]
+guessSyntax = true
+noClasses = false
+
 [languages]
 [languages.zh-CN]
 label = '简体中文'

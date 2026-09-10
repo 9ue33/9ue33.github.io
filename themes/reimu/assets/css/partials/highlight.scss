@@ -16,7 +16,7 @@
   code,
   kbd {
     font-family: $font-code;
-    font-size: 15px;
+    font-size: 13px;
     transition: 0.3s;
     word-break: break-word;
   }
@@ -142,22 +142,6 @@
   margin-bottom: 10px;
 }
 
-.code-decoration {
-  width: 70px;
-
-  &:after {
-    content: " ";
-    position: absolute;
-    border-radius: 50%;
-    background: #ff5f56;
-    width: 12px;
-    height: 12px;
-    box-shadow:
-      20px 0 #ffbd2e,
-      40px 0 #27c93f;
-  }
-}
-
 .code-figcaption-bottom {
   font-size: 14px;
   color: var(--highlight-comment);
@@ -243,7 +227,7 @@
   .mi,
   .il,
   .mo {
-    color: var(--highlight-orange);
+    color: var(--highlight-blue);
   }
 
   .c,
@@ -269,7 +253,7 @@
   .nb,
   .nl,
   .nt {
-    color: var(--highlight-orange);
+    color: var(--highlight-aqua);
   }
 
   .n,
