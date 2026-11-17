@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Linux提权", "SSTI", "HMAC", "n8n", "Docker"]
 description: "HTB Takeoff（Linux）实战：PDF 模板注入读环境变量，伪造登机牌 HMAC 进入主机，n8n 容器写 SUID bash 拿 root"
 draft: false
+password: true
 ---
 
 Takeoff 是一台航空订票主题的 Linux 机器。表面只有 nginx 和 SSH，真正的入口藏在「行程单 PDF」的模板渲染里：备注字段可以调用 Go 模板函数读任意文件，环境变量里躺着登机牌签名密钥和 n8n API Key。伪造一张通过 HMAC 校验的登机牌就能在核验口执行命令，之后借 n8n 的容器拿到主机 `kpark` 的 shell，最后用容器与主机共享的 bind mount 放一个 SUID bash 收尾。

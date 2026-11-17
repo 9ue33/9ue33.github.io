@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Windows", "Prompt注入", "MSSQL", "WinRM", "SeBackupPrivilege"]
 description: "HTB Unclaimed（Windows）实战：聊天机器人提示注入拿到 SQL 执行，impersonate 到 sysadmin 开 xp_cmdshell，解出 SQL Agent 凭据后用 Backup Operators 读 root flag"
 draft: false
+password: true
 ---
 
 Unclaimed 是一台 Windows 的行李查询系统：前台是一个叫 TracerBot 的客服聊天机器人，背后直接连着一台 SQL Server 2025。机器人会把自然语言转成 SQL，而它的系统提示里藏着一个「支持覆盖码」。拿到覆盖码就能让机器人执行任意 SQL，之后是标准的 MSSQL 提权链，最后用 SQL Agent 代理凭据登录 `svc_wtbackup`，借 Backup Operators 的备份语义读出 Administrator 的 root flag。

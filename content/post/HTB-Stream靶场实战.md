@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Linux提权", "XXE", "ClickHouse", "Spring Boot", "Kopia"]
 description: "HTB Stream（Linux）实战：heapdump 泄露数据库凭据、XXE 读配置进 SSH，最后靠备份里的口令和 root 定时器提权"
 draft: false
+password: true
 ---
 
 Stream 是一台机场数据链路主题的 Linux 机器：表面只有三个端口，实际上叠了 Spring Boot、FastAPI 摄入服务、Kafka、ClickHouse 四个组件，每一层泄漏的凭据喂给下一层，最后用一个以 root 身份运行的 DLQ 定时器收尾。

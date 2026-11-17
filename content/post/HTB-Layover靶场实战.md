@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Linux提权", "CUPS"]
 description: "HTB Layover（Linux / Medium）实战记录：RDP 跳板机、内网 WiFi、Craft CMS 门户与 CUPS 2.4.16 本地提权"
 draft: false
+password: true
 ---
 
 废话一下：打完湾区杯就去准备取证了，所以停更了一段时间，比赛还要继续进步吧

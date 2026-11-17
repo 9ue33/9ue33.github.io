@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Windows", "MySQL", "提权"]
 description: "HTB Touch（Windows / Easy）实战：DeviceHub 信息泄露、Kiosk 逃逸拿到 KioskUser，再用 MySQL UDF 以 SYSTEM 身份读出 root flag"
 draft: false
+password: true
 ---
 
 Touch 是一台机场主题的 Windows 机器，剧情接着 Layover：上一台机器里拿到的旅客姓名和订座号，在这里可以直接用来登录自助值机。

@@ -48,6 +48,11 @@ jobs:
         run: |
           hugo --gc --minify
 
+      - name: Encrypt locked posts
+        env:
+          BLOG_LOCK_PASSWORD: ${{ secrets.BLOG_LOCK_PASSWORD }}
+        run: node tools/blog-lock/encrypt.mjs
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

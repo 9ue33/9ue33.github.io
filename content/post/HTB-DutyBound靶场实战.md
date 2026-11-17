@@ -5,6 +5,7 @@ categories: ["网络攻防"]
 tags: ["HTB", "靶场", "Linux提权", "SQL注入", "PostgreSQL", "X11"]
 description: "HTB DutyBound（Linux）实战：登机牌条码 SQL 注入拿到 postgres shell，X11 横移到 kiosk 用户，最后借 systemd 服务提权"
 draft: false
+password: true
 ---
 
 DutyBound 是一台机场免税店主题的 Linux 机器：前台是 AirSnacks 自助收银，登机牌条码用来判断能不能免税；背后是 PostgreSQL、一个跑在 X11 上的 kiosk 桌面，以及一套用 `eval` 解析 CSV 的 root 服务。三块看起来无关的组件，刚好能串成一条链。

@@ -1,0 +1,154 @@
+/* Article password lock — visual layer for static/js/blog-lock.js */
+
+.article-entry .blog-lock {
+  margin: 2.4rem auto 3rem;
+  max-width: 460px;
+}
+
+.article-entry .blog-lock-card {
+  padding: 2rem 1.6rem 1.6rem;
+  text-align: center;
+  background: var(--color-wrap);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.article-entry .blog-lock-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 0.9rem;
+  color: var(--red-0);
+  background: var(--red-5);
+  border-radius: 50%;
+}
+
+.article-entry .blog-lock-title {
+  margin: 0 0 0.4rem;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-default);
+}
+
+.article-entry .blog-lock-sub {
+  margin: 0 0 1.2rem;
+  font-size: 0.92rem;
+  color: var(--color-default);
+  opacity: 0.75;
+}
+
+.article-entry .blog-lock-hint {
+  margin: 0 0 1.2rem;
+  padding: 0.5rem 0.8rem;
+  font-size: 0.85rem;
+  line-height: 1.5;
+  text-align: left;
+  color: var(--color-default);
+  background: var(--red-5);
+  border-radius: 8px;
+  word-break: break-word;
+}
+
+.article-entry .blog-lock-form {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.article-entry .blog-lock-input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.55rem 0.8rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.article-entry .blog-lock-input:focus {
+  border-color: var(--red-0);
+  box-shadow: 0 0 0 3px var(--red-5);
+}
+
+.article-entry .blog-lock-submit {
+  flex-shrink: 0;
+  padding: 0.55rem 1.2rem;
+  font: inherit;
+  font-size: 0.95rem;
+  color: #fff;
+  cursor: pointer;
+  background: var(--red-0);
+  border: none;
+  border-radius: 8px;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.article-entry .blog-lock-submit:hover {
+  opacity: 0.9;
+}
+
+.article-entry .blog-lock-submit:active {
+  transform: scale(0.97);
+}
+
+.article-entry .blog-lock-submit:disabled {
+  cursor: progress;
+  opacity: 0.6;
+}
+
+.article-entry .blog-lock-error {
+  margin: 0.7rem 0 0;
+  font-size: 0.85rem;
+  color: #e45649;
+}
+
+.article-entry .blog-lock-note,
+.article-entry .blog-lock-toc-note {
+  color: var(--color-default);
+  opacity: 0.7;
+}
+
+.blog-lock-shake {
+  animation: blog-lock-shake 0.4s ease-in-out;
+}
+
+@keyframes blog-lock-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(6px);
+  }
+  60% {
+    transform: translateX(-4px);
+  }
+  80% {
+    transform: translateX(4px);
+  }
+}
+
+@media (max-width: 480px) {
+  .article-entry .blog-lock-form {
+    flex-direction: column;
+  }
+
+  .article-entry .blog-lock-submit {
+    padding: 0.55rem 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blog-lock-shake {
+    animation: none;
+  }
+}
