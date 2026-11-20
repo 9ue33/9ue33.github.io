@@ -72,7 +72,7 @@ xfreerdp /v:10.129.247.82 /u:contractor /p:'Contractor2026!' \
 
 登录后是一台 XFCE 桌面的 `airside-ws01`，主机名和题目描述里的机场跳板机一致：
 
-![1](../../htb/01-desktop.png)
+![1](/htb/01-desktop.png)
 
 ## 3. 内网：接入 HTB International WiFi
 
@@ -135,7 +135,7 @@ uid=1001(aporter) gid=1001(aporter) groups=1001(aporter)
 portal
 ```
 
-![2](../../htb/02-user-flag.png)
+![2](/htb/02-user-flag.png)
 
 ## 5. 权限提升：CUPS CVE-2026-34990
 
@@ -150,7 +150,7 @@ LISTEN 0 4096 127.0.0.1:631  ...
 
 CUPS 以 root 运行，版本 2.4.16 正好落在 CVE-2026-34990 的影响范围内（≤ 2.4.16）。
 
-![3](../../htb/03-cups-enum.png)
+![3](/htb/03-cups-enum.png)
 
 常规项（SUID、cron、可写服务、`sudo -l`）都没有直接突破口，`aporter` 并不在 sudoers 里。
 
@@ -189,7 +189,7 @@ ipp_post(f"/printers/{name}", ipp_req(0x0002, 13, [...], body=payload), token=to
 
 Portal 没有外网，PoC 通过 RDP 的磁盘重定向带进去：在本机用 `xfreerdp /drive:share,/path` 把目录挂进跳板机会话，再 `scp` 到 portal。
 
-![4](../../htb/06-scp-transfer.png)
+![4](/htb/06-scp-transfer.png)
 
 ```bash
 python3 /tmp/poc.py
@@ -207,7 +207,7 @@ python3 /tmp/poc.py
 [*] run: sudo -i
 ```
 
-![5](../../htb/04-cups-poc.png)
+![5](/htb/04-cups-poc.png)
 
 读取 root flag：
 
@@ -216,7 +216,7 @@ $ sudo -n cat /root/root.txt
 aa94e952b14a5fede9c8b8ce********
 ```
 
-![6](../../htb/05-root-flag.png)
+![6](/htb/05-root-flag.png)
 
 ## 6. 收尾
 
@@ -245,7 +245,7 @@ aa94e952b14a5fede9c8b8ce********
 - 剪贴板是异步同步的，刚设置的文本立刻粘贴会粘到上一次的内容；
 - xfce4-terminal 对多行粘贴有「危险粘贴」拦截，需要手动确认：
 
-![7](../../htb/07-paste-warning.png)
+![7](/htb/07-paste-warning.png)
 
 最后稳定的组合是：单行命令走剪贴板（无换行不弹窗）、`Ctrl+Shift+V` 粘贴、`Ctrl+J` 执行；文件走共享目录。
 

@@ -88,7 +88,7 @@ xfreerdp /v:10.129.205.193 /u:KioskUser /p:'K!0sk2026#' \
 
 Staff Login 需要扫描员工胸卡。但我们已经通过 DeviceHub 把扫描仪断电了，点 **Scan Badge** 后应用直接抛错：
 
-![1](../../touch/01-kiosk-error.png)
+![1](/touch/01-kiosk-error.png)
 
 错误弹窗里带一个可点击的“support page”链接——Kiosk 套壳应用最典型的突破口：错误处理会拉起一个完整的浏览器。
 
@@ -96,13 +96,13 @@ Staff Login 需要扫描员工胸卡。但我们已经通过 DeviceHub 把扫描
 
 点链接会打开 Microsoft Edge。在 Edge 里按 `Ctrl+O` 调出原生文件对话框：
 
-![2](../../touch/02-edge-open.png)
+![2](/touch/02-edge-open.png)
 
 在文件名里填 `C:\Windows\System32\cmd.exe` 回车。Edge 会把它当成“下载”，在下载面板出现 `cmd.exe`，点 **Open file** 即执行。
 
 于是拿到了 `kiosk-042\kioskuser` 的命令行：
 
-![3](../../touch/03-cmd-whoami.png)
+![3](/touch/03-cmd-whoami.png)
 
 > 如果扫描仪没断电，错误不会触发；这也是为什么前面要先关设备。应用自身每 2 分钟会重置一次会话，逃逸动作要在窗口期内完成。
 
@@ -118,7 +118,7 @@ type C:\Users\KioskUser\Desktop\user.txt
 04317dcf248090e746570035********
 ```
 
-![4](../../touch/04-user-flag.png)
+![4](/touch/04-user-flag.png)
 
 ## 5. 提权：MySQL UDF → SYSTEM
 
@@ -154,7 +154,7 @@ ERROR 1290: The MySQL server is running with the --secure-file-priv option ...
 icacls C:\MySQL\lib\plugin
 ```
 
-![5](../../touch/05-plugin-acl.png)
+![5](/touch/05-plugin-acl.png)
 
 `BUILTIN\Authenticated Users:(M)` —— 普通用户就能往插件目录写文件，这是整条链的关键。
 
@@ -176,7 +176,7 @@ certutil -hashfile u5.dll MD5
 
 目标上的 MD5 与本地构建完全一致（`a8e13263…`），说明二进制没有被输入过程破坏：
 
-![6](../../touch/06-dll-transfer.png)
+![6](/touch/06-dll-transfer.png)
 
 ### 5.5 加载 UDF 并取出 root.txt
 
@@ -201,17 +201,17 @@ C:\Users\KioskUser\Downloads>dir ok*.flag r*.txt
 
 `ok1.flag` 表示复制成功，`r1.txt` 就是 root flag：
 
-![7](../../touch/07-udf-create.png)
+![7](/touch/07-udf-create.png)
 
 ```text
 f7ccc1b7333703832e6485d6c7********
 ```
 
-![8](../../touch/08-root-flag.png)
+![8](/touch/08-root-flag.png)
 
 > 这台机器后来被重新上线、flag 也随之更新，按同一套方法重新读取了一次（UDF 执行 + `type r1.txt`）：
 
-![9](../../touch/09-flag-read.png)
+![9](/touch/09-flag-read.png)
 
 ## 6. 收尾
 

